@@ -1,0 +1,388 @@
+{% extends "mainpages/base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="">
+    <div class="container">
+    <h1>View Crime in your Area!</h1>
+    </div>
+
+
+
+<div class="col-md-3">
+        <div id="instructions-Legend">
+        <img src="{% static "icons/zoom.png" %}" style="max-width: 50%; max-height: 50%; text-align: center; display: block; margin: auto; padding-top:105px;">
+        <h3>Zoom into the map to review crime in your area!</h3>
+        </div>
+        <div id="legend" style="display: none;">
+            <ul class="map-nav">
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/sexual-offences.png" %}" style="height: 20px;">
+                      <input id="Sexual offences" type="checkbox" name="filter" value="Sexual offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Sexual offences</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/muder.png" %}" style="height: 20px;">
+                      <input id="Attempts/threats to murder, assaults, harassments and related offences" type="checkbox" name="filter" value="Attempts/threats to murder, assaults, harassments and related offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Attempts/threats to murder, assaults, harassments</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/kidnapping.png" %}" style="height: 20px;">
+                      <input id="Kidnapping and related offences" type="checkbox" name="filter" value="Kidnapping and related offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Kidnapping</span>
+
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/burglary.png" %}" style="height: 20px;">
+                      <input id="Burglary and related offences" type="checkbox" name="filter" value="Burglary and related offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Burglary</span>
+
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/theft.png" %}" id="theft" style="height: 20px;">
+                      <input id="Theft and related offences" type="checkbox" name="filter" value="Theft and related offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Theft</span>
+
+
+                  </ul>
+                <ul class="list-group-item">
+
+                      <img src="{% static "icons/Homicide.png" %}" style="height: 20px;">
+                      <input id="Homicide Offences" type="checkbox" name="filter" value="Homicide Offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Homicide Offences</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/fraud.png" %}" style="height: 20px;">
+                      <input id="Fraud, deception and related offences" type="checkbox" name="filter" value="Fraud, deception and related offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Fraud and deception</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/drugs.png" %}" style="height: 20px;">
+                      <input id="Controlled drug offences" type="checkbox" name="filter" value="Controlled drug offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Controlled drug offences</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/shooting.png" %}" style="height: 20px;">
+                      <input id="Weapons and Explosives Offences" type="checkbox" name="filter" value="Weapons and Explosives Offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Weapons and Explosives Offences</span>
+
+                  </ul>
+                  <ul class="list-group-item">
+
+                      <img src="{% static "icons/damage.png" %}" style="height: 20px;">
+                      <input id="Damage to property and to the environment" type="checkbox" name="filter" value="Damage to property and to the environment" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Damage to property and to the environment</span>
+
+
+                  </ul>
+                  <ul class="list-group-item">
+                      <img src="{% static "icons/public-order.png" %}" style="height: 20px;">
+                      <input id="Public order and other social code offences" type="checkbox" name="filter" value="Public order and other social code offences" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Public order and other social code offences</span>
+
+
+                  </ul>
+                  <ul class="list-group-item">
+                      <img src="{% static "icons/gov.png" %}" style="height: 20px;">
+                      <input id="Offences against government, justice procedures and organisation of crime" type="checkbox" name="filter" value="Offences against government, justice procedures and organisation of crime" class='chk-btn' onclick="selectAllChecked();" checked>
+                      <span>Offences against government, justice procedures and organisation of crime</span>
+
+
+                  </ul>
+            </ul>
+    </div>
+    </div>
+
+<div class="col-md-9">
+    <div id="map-canvas" style="height:650px;"></div>
+    <br>
+    <br>
+    <a class="btn btn-primary btn-lg" href="{% url 'logcrime' %}">Log a Crime</a>
+    <br
+    <br>
+    <br>
+</div>
+</div>
+<br>
+
+<br>
+<script type="text/javascript"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAWpRolRFOeBuvrM22910ZuWU206_T6us&libraries=visualization">
+</script>
+
+
+<script>
+var gmarkers1 = [];
+var markers1 = [];
+var infowindow = new google.maps.InfoWindow({
+    content: ''
+});
+
+var heatMapData = [];
+
+
+markers1 = [
+    {% for userlog in userlogs %}
+    ['{{ userlog.pk }}','{{ userlog.date }}', '{{userlog.lat}}', '{{userlog.lng}}', '{{ userlog.get_crime_type_display }}'],
+    {% endfor %}
+];
+
+mp = [
+    ['0', 51.512187, -0.144769, 'shopping']
+];
+
+
+/**
+ * Function to init map
+ */
+
+function initialize() {
+    var center = new google.maps.LatLng(53.3070643, -7.83237079);
+    var mapOptions = {
+        zoom: 7,
+        center: new google.maps.LatLng(53.3070643, -7.83237079),
+        mapTypeId: 'hybrid',
+        styles:[
+        {
+          featureType:"poi",
+          stylers: [
+          {visibility:"off"}
+          ]
+
+        }
+        ]
+    };
+
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    for (i = 0; i < markers1.length; i++) {
+        addMarker(markers1[i]);
+    }
+
+    for (i = 0; i < mp.length; i++) {
+    }
+
+
+	var pointArray = new google.maps.MVCArray(heatMapData);
+	heatmap = new google.maps.visualization.HeatmapLayer({
+	     data: pointArray
+	});
+	heatmap.setMap(map);
+
+
+
+
+
+
+function addMarker(marker) {
+    var tip = marker[4];
+    var title = marker[1];
+    var pos = new google.maps.LatLng(marker[2], marker[3]);
+    var content = "<b>" + marker[4] + "</b><br>" + marker[1];
+    heatMapData.push(pos);
+
+
+    var baseicon = {
+          "Sexual offences": {
+        icon: '{% static "icons/sexual-offences.png" %}',
+          },
+          "Attempts/threats to murder, assaults, harassments and related offences": {
+        icon: '{% static "icons/muder.png" %}',
+          },
+          "Kidnapping and related offences": {
+        icon: '{% static "icons/kidnapping.png" %}',
+        },
+          "Burglary and related offences": {
+        icon: '{% static "icons/burglary.png" %}',
+          },
+          "Homicide Offences": {
+        icon: '{% static "icons/Homicide.png" %}',
+          },
+          "Theft and related offences": {
+        icon: '{% static "icons/theft.png" %}',
+          },
+          "Fraud, deception and related offences": {
+        icon: '{% static "icons/fraud.png" %}',
+          },
+          "Controlled drug offences": {
+        icon: '{% static "icons/drugs.png" %}',
+          },
+          "Weapons and Explosives Offences": {
+        icon: '{% static "icons/shooting.png" %}',
+          },
+          "Damage to property and to the environment": {
+        icon: '{% static "icons/damage.png" %}',
+          },
+          "Public order and other social code offences": {
+        icon: '{% static "icons/public-order.png" %}',
+          },
+          "Offences against government, justice procedures and organisation of crime": {
+        icon: '{% static "icons/gov.png" %}',
+          },
+/*
+		"shopping": {
+        url: "http://maps.google.com/mapfiles/ms/micons/blue.png",
+        scaledSize: new google.maps.Size(30, 30),
+        anchor: new google.maps.Point(15, 30)
+          },
+		"hotels": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"foodanddrink": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"culture": {
+            icon: iconBase + 'library_maps.png'
+          },*/
+    };
+
+    var icon = baseicon[tip].icon;
+
+    //console.log(tip);
+    //console.log(tip.icon);
+    marker1 = new google.maps.Marker({
+        title: title,
+        position: pos,
+        tip: tip,
+        //map: map,
+        icon: icon
+    });
+
+    gmarkers1.push(marker1);
+
+    // Marker click listener
+    google.maps.event.addListener(marker1, 'click', (function(marker1, content) {
+        return function() {
+            console.log('Gmarker 1 gets pushed');
+            infowindow.setContent(content);
+            infowindow.open(map, marker1);
+
+        }
+    })(marker1, content));
+	google.maps.event.addListener(map, 'zoom_changed', function() {
+        var zoom = map.getZoom();
+
+        if (zoom > 10) {
+            heatmap.setMap(null); //instructions-Legend
+            document.getElementById("legend").style.display='block';
+            document.getElementById("instructions-Legend").style.display='none';
+		  for (i = 0; i < markers1.length; i++) {
+              gmarkers1[i].setMap(map);
+            }
+        } else {
+            console.log(markers1.length);
+            document.getElementById("legend").style.display='none';
+            document.getElementById("instructions-Legend").style.display='block';
+            heatmap.setMap(map);
+            for (i = 0; i < markers1.length; i++) {
+              gmarkers1[i].setMap(null);
+            }
+        }
+    })
+}
+}
+
+
+var tipovi = document.getElementsByClassName('chk-btn').value;
+
+var selectAllChecked = function() {
+    var checkedPlace = []
+    var allCheckedElem = document.getElementsByName('filter');
+    for (var i = 0; i < allCheckedElem.length; i++) {
+        if (allCheckedElem[i].checked == true) {
+            checkedPlace.push(allCheckedElem[i].value)//creating array of checked items
+        }
+    }
+    filterChecker(checkedPlace) //passing to function for updating markers
+}
+
+var filterChecker = function(tip) {
+    for (i = 0; i < markers1.length; i++) {
+        marker = gmarkers1[i];
+        if (in_array(this.marker.tip, tip) != -1) {
+          marker.setMap(map);
+        } else {
+          marker.setMap(null);
+        }
+    }
+}
+// Init map
+initialize();
+
+function in_array(needle, haystack) {
+    var found = 0;
+    for (var i = 0, len = haystack.length; i < len; i++) {
+        if (haystack[i] == needle) return i;
+        found++;
+    }
+    return -1;
+}
+
+/*
+    var iconBase =
+            'https://developers.google.com/maps/documentation/javascript/examples/full/images/';
+    var customIcons  = {
+          "Sexual offences": {
+		  icon: 'https://img.icons8.com/color/100/000000/define-location.png'
+          },
+          "Attempts/threats to murder, assaults, harassments and related offences": {
+            icon: iconBase + 'library_maps.png'
+          },
+          "Kidnapping and related offences": {
+            icon: iconBase + 'info-i_maps.png'
+          },
+          "Burglary and related offences": {
+            icon: iconBase + 'library_maps.png'
+          },
+          "Theft and related offences": {
+            icon: iconBase + 'info-i_maps.png'
+          },
+          "Fraud, deception and related offences": {
+            icon: iconBase + 'library_maps.png'
+          },
+          "Controlled drug offences": {
+            icon: iconBase + 'info-i_maps.png'
+          },
+          "Weapons and Explosives Offences": {
+            icon: iconBase + 'library_maps.png'
+          },
+          "Damage to property and to the environment": {
+            icon: iconBase + 'library_maps.png'
+          },
+          "Public order and other social code offences": {
+            icon: iconBase + 'info-i_maps.png'
+          },
+          "Offences against government, justice procedures and organisation of crime": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"shopping": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"hotels": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"foodanddrink": {
+            icon: iconBase + 'library_maps.png'
+          },
+		"culture": {
+            icon: iconBase + 'library_maps.png'
+          },
+        };
+*/
+</script>
+
+{% endblock %}
