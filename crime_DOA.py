@@ -73,7 +73,7 @@ class crimeDOA:
         test = self.convertToDict(result)
         return test
 
-    # update
+    # Update
     def update(self, crime):
         cursor = self.db.cursor()
         sql="update crime set User= %s, date=%s, type= %s, lng=%s, lat=%s  where id =%s " 
@@ -88,7 +88,7 @@ class crimeDOA:
         cursor.execute(sql, values)
         self.db.commit()
 
-    # delete
+    # Delete
     def delete(self, id):
         cursor = self.db.cursor()
         sql="delete from crime where id = %s"

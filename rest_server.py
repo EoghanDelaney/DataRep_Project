@@ -6,7 +6,7 @@ from flask import render_template
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return "hello"
 
 
 
@@ -30,12 +30,11 @@ def findById(id):
 
 @app.route('/crimes', methods=['POST'])
 def create():
-    #global nextId
+
     if not request.json:
         abort(400)
 
     crime = {
-        #"id": nextId,
         "User": request.json["User"],
         "date": request.json["date"],
         "type": request.json["type"],
@@ -46,14 +45,13 @@ def create():
     return jsonify(crimeDOA.create(crime))
 
  
-#update
+# Update
 # curl -X PUT -d "{\"User\":\"Mary\", \"date\":\"06-11-20\", \"type\":\"Egging a policeman\", \"lng\":9.789, \"lat\":36.756}" -H Content-Type:application/json "http://127.0.0.1:5000/crimes/1
 
 @app.route('/crimes/<int:id>', methods=['PUT'])
 def update(id):
     foundCrime=crimeDOA.findByID(id)
-    #return foundCrime['User']
-    #return jsonify(request.json)
+
     if foundCrime == {}:
         return jsonify({}), 404
     
@@ -73,7 +71,7 @@ def update(id):
     crimeDOA.update(currentCrime)    
     return jsonify(currentCrime)
 
-#delete
+# Delete
 # curl -X DELETE http://127.0.0.1:5000/crimes/4
 
 @app.route('/crimes/<int:id>', methods=['DELETE'])
