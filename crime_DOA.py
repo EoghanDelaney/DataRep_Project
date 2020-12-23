@@ -97,7 +97,7 @@ class crimeDOA:
         self.db.commit()
         print("delete done")
 
-    def convertToDict(slef, result):
+    def convertToDict(self, result):
         colnames = ['id','User', 'date', 'type', 'lng', 'lat']
         crime = {}
 

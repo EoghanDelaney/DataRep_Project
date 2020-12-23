@@ -1,12 +1,488 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script type="text/javascript"src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAWpRolRFOeBuvrM22910ZuWU206_T6us&libraries=visualization"></script>
     <meta charset="utf-8">
     <title>Hello World</title>
-    <!---<link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>--->
+    <style type="text/css">
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 550px;
+        /* The height is 400 pixels */
+        width: 100%;
+        /* The width is the width of the web page */
+      }
+    </style>
   </head>
   <body>
-    <!-- page content -->Hello World
-  </body>
+    <div class="container"  ><h1>Crimelog.ie</h1></div>
+
+
+    <div id="showCreateButton" onclick="showCreate()" class="container">
+        <button type="submit" value="Log Crime" class="btn btn-primary" onclick="">Create Crime Log</button>
+    </div>
+    
+
+    <div class="container">
+        <div id="map-canvas" style="height:650px;"></div>
+        <table id="crimeTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Crime</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Update</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            
+        </table>
+    </div>
+
+
+    <div class="container">
+            <div id='createUpdateCrimeForm' style="display: none" novalidate>
+                <h1>Log Crime - ANONYMOUSLY</h1>
+                <div class='form-group'>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="container-fluid">
+                                <div class="form-group">
+                                    <img src="img\touchScreen.png" style="height:150px; margin-left: auto; margin-right: auto; display: block; margin-top:10px; margin-bottom:10px;">
+                                    <label>User  </label><br><input type="text" id="user" name="user" value="---"><br><br>
+                                    <label>Date  </label><br><input type="date" id="date" name="date"><br><br>
+                                    <label>Crime Type  </label><br> <select name="type">
+                                            <option value="select">---</option>
+                                            <option value="murder">Murder</option>
+                                            <option value="J Walking">J walking</option>
+                                            <option value="Fist Fighting">Fist Fighting</option>
+                                        </select> <br><br>
+                                    <label>Where did it happen? Pick your location on the map. You can drag the cursor to the correct location!</label>
+                                    <span><button class="btn btn-primary" id="doCreateButton" onclick="doCreate()">Log Crime</button></span>
+                                    <span><button class="btn btn-primary" id="doUpdateButton" onclick="doUpdate()">Update</button></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="container-fluid">
+                                <div id="map" style="height:650px;"></div>
+                                <label style="visibility: .;" class="control-label">Lat:</label>
+                                <input style="visibility: .;" type="text" class="form-control" id="lat" name="lat" readonly/>
+                                <label style="visibility: .;">Long:</label>
+                                <input style="visibility: .;" type="text" class="form-control" id="lng" name="lng" readonly/>    
+                                </div>
+                            </div>
+                        </div>
+                         <h4><b>Thank you for informing your community - we also strongly advise you to report any Crime to the <a href="https://www.garda.ie/en/">Gardai</a></b></h4>
+                    </div>
+                </div>
+           
+            </div>
+    </div>
+    <div id="twitter-tweets" class="container">
+        <h4>Tweets on Crime</h4>
+    </div>
+
+
+
+<script src="https://unpkg.com/location-picker/dist/location-picker.min.js"></script>
+<script>
+        var marker = true;
+        var updateNumber = '';
+        function showCreate(){
+            marker = false
+            document.getElementById('showCreateButton').style.display="none"
+            document.getElementById('crimeTable').style.display="none"
+            document.getElementById('map-canvas').style.display="none"
+            //
+            document.getElementById('createUpdateCrimeForm').style.display="block"
+
+            //document.getElementById('createLabel').style.display="inline"
+            //document.getElementById('updateLabel').style.display="none"
+
+            document.getElementById('doCreateButton').style.display="block"
+            document.getElementById('doUpdateButton').style.display="none"
+            
+
+        }
+        function showViewAll(){
+            marker = true
+            document.getElementById('showCreateButton').style.display="block"
+            document.getElementById('crimeTable').style.display="block"
+            document.getElementById('map-canvas').style.display="block"
+            document.getElementById('createUpdateCrimeForm').style.display="none"
+            
+        }
+        function showUpdate(buttonElement){
+            updateNumber = buttonElement.parentNode.parentNode.cells[0].innerText
+            marker = false
+            document.getElementById('showCreateButton').style.display="none"
+            document.getElementById('crimeTable').style.display="none"
+            document.getElementById('map-canvas').style.display="none"
+            document.getElementById('createUpdateCrimeForm').style.display="block"
+
+            //document.getElementById('createLabel').style.display="none"
+            //document.getElementById('updateLabel').style.display="inline"
+
+            document.getElementById('doCreateButton').style.display="none"
+            document.getElementById('doUpdateButton').style.display="block"
+            
+        }
+
+
+
+
+        // #####  HERE WE HAVE THE AJAX CALLS TO THE SERVER #########///
+        function getAllCrimesAjax(){
+            $.ajax({
+                "url": "http://127.0.0.1:5000/crimes",
+                "method":"GET",
+                "data":"",
+                "dataType": "JSON",
+                "success":function(result){
+                    //console.log(result);
+                    for (crime of result){
+                        addCrimeToTable(crime);
+                        //markers1.push(crime);
+                        var myLatlng = new google.maps.LatLng(crime.lat, crime.lng);
+                        //alert(myLatlng);
+                        var marker = new google.maps.Marker({
+                            position: myLatlng,
+                            map: map,
+                            title: "Crime: "+crime.type+"\nWho logged it: "+crime.User
+                        })
+                }},
+                "error":function(xhr,status,error){
+                    console.log("error: "+status+" msg:"+error);
+                }
+            });
+        }
+
+        function updateCrimeAjax(crime){
+                console.log(JSON.stringify(crime));
+                $.ajax({
+                    "url": "http://127.0.0.1:5000/crimes/"+encodeURI(crime.id),
+                    "method":"PUT",
+                    "data":JSON.stringify(crime),
+                    "dataType": "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    "success":function(result){
+                        console.log(result);
+                        //document.getElementById("output").innerText = JSON.stringify(result);    
+                    },
+                    "error":function(xhr,status,error){
+                        console.log("error: "+status+" msg:"+error);
+                    }
+                });
+
+        }
+
+        function createCrimeAjax(crime){
+            
+            console.log(JSON.stringify(crime));
+            $.ajax({
+                "url": "http://127.0.0.1:5000/crimes",
+                "method":"POST",
+                "data":JSON.stringify(crime),
+                "dataType": "JSON",
+                contentType: "application/json; charset=utf-8",
+                "success":function(result){
+                    console.log(result);
+                    //document.getElementById("output").innerText = JSON.stringify(result);    
+                },
+                "error":function(xhr,status,error){
+                    console.log("error: "+status+" msg:"+error);
+                }
+            });
+
+        }
+
+        function deleteCrimeAjax(id){
+            //console.log(JSON.stringify(crime));
+            $.ajax({
+                "url": "http://127.0.0.1:5000/crimes/"+id,
+                "method":"DELETE",
+                "data":"",
+                "dataType": "JSON",
+                contentType: "application/json; charset=utf-8",
+                "success":function(result){                 
+                },
+                "error":function(xhr,status,error){
+                    console.log("error: "+status+" msg:"+error);
+                }
+            });
+        }
+        
+        function getTweetsAjax(){
+                $.ajax({
+                    "url": "http://127.0.0.1:5000/twitter",
+                    "method":"GET",
+                    "data":"",
+                    "dataType": "JSON",
+                    "success":function(result){
+                        console.log(result);
+                        for (crime of result){
+                            //console.log(crime['comment'])
+                            addTwitterRow(crime);
+                    }},
+                    "error":function(xhr,status,error){
+                        console.log("error: "+status+" msg:"+error);
+                    }
+                });
+        }
+        //getAllCrimes();
+        function doCreate(){
+            var form = document.getElementById('createUpdateCrimeForm')
+            var crime = {}
+            crime.User = form.querySelector('input[name="user"]').value
+            crime.date = form.querySelector('input[name="date').value
+            crime.type = form.querySelector('select[name="type"]').value
+            crime.lat = form.querySelector('input[name="lat"]').value
+            crime.lng = form.querySelector('input[name="lng"]').value
+            console.log(JSON.stringify(crime))            
+            createCrimeAjax(crime)
+            addCrimeToTable(crime)
+            clearForm()
+            //getAllCrimesAjax()
+            showViewAll()
+        }
+        function doUpdate(){
+            //console.log(updateNumber)
+            var crime = getCrimeFromForm();
+            crime.id = updateNumber
+
+            //console.log(updateNumber, crime)
+            updateCrimeAjax(crime);
+            setCrimeInRow(updateNumber,crime);
+       
+            clearForm();
+            showViewAll();
+            
+            
+            //var crime = getCrimeFromForm();
+            //var rowElement = r.parentNode.parentNode.cells[0].innerText;
+            //var rowElement = document.getElementById('id');
+            //id = rowElement.cells[0].innerText
+            //console.log(rowElement, id)
+            //updateCrimeAjax(crime);
+            //setCrimeInRow(rowElement,crime);
+        
+            //clearForm();
+            //showViewAll();
+        }
+ 
+ 
+        function doDelete(r){
+            var tableElement = document.getElementById('crimeTable');
+            var rowElement = r.parentNode.parentNode;
+            var index = rowElement.rowIndex;
+            console.log(rowElement.cells[0].innerText)
+            deleteCrimeAjax(rowElement.cells[0].innerText);
+            tableElement.deleteRow(index);
+        }
+        function addCrimeToTable(crime){
+            var tableElement = document.getElementById('crimeTable')
+            var rowElement = tableElement.insertRow(-1)
+            rowElement.setAttribute('id',crime.id)
+            var cell1 = rowElement.insertCell(0);
+            cell1.innerHTML = crime.id
+            var cell2 = rowElement.insertCell(1);
+            cell2.innerHTML = crime.User
+            var cell3 = rowElement.insertCell(2);
+            cell3.innerHTML = crime.type
+            var cell4 = rowElement.insertCell(3);
+            cell4.innerHTML = crime.date
+            var cell5 = rowElement.insertCell(4);
+            cell5.innerHTML = '<button class="btn btn-primary" onclick="showUpdate(this)">Update</button>'
+            var cell6 = rowElement.insertCell(5);
+            cell6.innerHTML = '<button class="btn btn-primary" onclick=doDelete(this)>Delete</button>'
+
+        }
+        function addTwitterRow(crime){
+                $("#twitter-tweets").append("<p><b>"+ crime.user+","+crime.date+"</b></p><br><p>"+crime.comment);
+                }
+
+
+/*
+
+        <div class="card" style="width: 18rem;">
+            <img src="" class="card-img-top" alt="">
+            <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+            </div>
+        </div>
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // ####### HERE WE HAVE THE GOOGLE MAPS CALLS ################////
+        var map;
+        var map1; //Will contain map object.
+        //var marker = false; ////Has the user plotted their location marker?
+        var markers1 = [];
+
+
+        //Function called to initialize / create the map.
+        //This is called when the page has loaded.
+        function initMap() {
+
+            //The center location of our map.
+            var centerOfMap = new google.maps.LatLng(53.3070643, -7.83237079);
+
+            //Map options.
+            var options = {
+            center: centerOfMap, //Set center.
+            zoom: 7 //The zoom value.
+            };
+
+            //Create the map object.
+            map = new google.maps.Map(document.getElementById('map'), options);
+
+            //Listen for any clicks on the map.
+            google.maps.event.addListener(map, 'click', function(event) {
+                //Get the location that the user clicked.
+                var clickedLocation = event.latLng;
+                //If the marker hasn't been added.
+                if(marker === false){
+                    //Create the marker.
+                    marker = new google.maps.Marker({
+                        position: clickedLocation,
+                        map: map,
+                        draggable: true //make it draggable
+                    });
+                    //Listen for drag events!
+                    google.maps.event.addListener(marker, 'dragend', function(event){
+                        markerLocation();
+                    });
+                } else{
+                    //Marker has already been added, so just change its location.
+                    marker.setPosition(clickedLocation);
+                }
+                //Get the marker's location.
+                markerLocation();
+            });
+        }
+
+        /**********************************************************************************************************************************************/
+        function initialize() {
+            var center = new google.maps.LatLng(53.3070643, -7.83237079);
+            var mapOptions = {
+                zoom: 7,
+                center: new google.maps.LatLng(53.3070643, -7.83237079),
+                mapTypeId: 'hybrid',
+                styles:[
+                        {
+                            featureType:"poi",
+                            stylers: [
+                                {visibility:"off"}
+                                ]
+                        }
+                    ]
+            }    
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+            
+        }
+        google.maps.event.addDomListener(window, 'load', initMap);
+    
+        initialize();
+
+
+        //*********************************************************************************************************************************************
+        //This function will get the marker's current location and then add the lat/long
+        //values to our textfields so that we can save the location.
+        function markerLocation(){
+            //Get location.
+            var currentLocation = marker.getPosition();
+            //Add lat and lng values to a field that we can save.
+            document.getElementById('lat').value = currentLocation.lat(); //latitude
+            document.getElementById('lng').value = currentLocation.lng(); //longitude
+        }
+        //Load the map when the page has finished loading.
+
+
+
+        // ############## INTERACT WITH THE PAGE########################//
+
+        function clearForm(){
+            var form = document.getElementById('createUpdateCrimeForm')
+
+            //form.querySelector('input[name="id"]').disabled = false
+            //form.querySelector('input[name="id"]').disabled = true
+            form.querySelector('input[name="user"]').value = ''
+            form.querySelector('input[name="date').value = ''
+            form.querySelector('select[name="type"]').value = ''          
+            form.querySelector('input[name="lat"]').value = ''    
+            form.querySelector('input[name="lng"]').value = ''  
+        }
+        function getCrimeFromRow(rowElement){
+                console.log(rowElement)
+                var crime ={}
+                crime.id  = rowElement.cells[0].firstChild.textContent
+                crime.User = rowElement.cells[1].firstChild.textContent
+                crime.type = rowElement.cells[2].firstChild.textContent
+                crime.date = rowElement.cells[3].firstChild.textContent
+                return crime
+            }
+        function setCrimeInRow(rowElement, crime){
+                //console.log(rowElement, crime)
+                rowElement.cells[0].firstChild.textContent= crime.id  
+                rowElement.cells[1].firstChild.textContent= crime.User 
+                rowElement.cells[2].firstChild.textContent= crime.type
+                rowElement.cells[3].firstChild.textContent= crime.date
+        }
+        function populateFormWithCrime(crime){
+            var form = document.getElementById('createUpdateForm')
+            form.querySelector('input[name="id"]').disabled = true
+            form.querySelector('input[name="user"]').value = crime.User
+            form.querySelector('input[name="date').value = crime.date
+            form.querySelector('select[name="type"]').value = crime.type           
+            form.querySelector('input[name="lat"]').value = crime.lat    
+            form.querySelector('input[name="lng"]').value = crime.lng  
+            return crime
+            }
+
+        // From Form Populate 
+        function getCrimeFromForm() {
+                var form = document.getElementById('createUpdateCrimeForm')
+                var crime = {}
+                crime.User = form.querySelector('input[name="user"]').value
+                crime.date = form.querySelector('input[name="date').value
+                crime.type = form.querySelector('select[name="type"]').value
+                crime.lat = form.querySelector('input[name="lat"]').value
+                crime.lng = form.querySelector('input[name="lng"]').value
+                console.log(JSON.stringify(crime))
+                return crime
+        }
+
+
+        getAllCrimesAjax()
+        getTweetsAjax()
+</script>
+
+
 </html>

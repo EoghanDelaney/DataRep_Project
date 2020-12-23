@@ -1,8 +1,10 @@
 from flask import Flask, url_for, request, redirect, abort, jsonify
-app = Flask(__name__, static_url_path='', static_folder='staticpages')
+
 from crime_DOA import crimeDOA
+from twitter_scrape import twitter
 from flask import render_template
 
+app = Flask(__name__, static_url_path='', static_folder='staticpages')
 
 @app.route('/')
 def index():
@@ -78,6 +80,13 @@ def update(id):
 def delete(id):
 
     return jsonify(crimeDOA.delete(id))
+
+# curl http://127.0.0.1:5000/twitter
+@app.route('/twitter')
+def twitter_call():
+    return jsonify(twitter('crime ireland',15))
+
+
 
 
 
