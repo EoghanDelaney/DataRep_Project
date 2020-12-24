@@ -8,14 +8,16 @@
 ## My Project
 <p>My project consisted of creating a REST API with a web interface, consuming data from Twitters API and Google Maps API. The theme of the REST API was to highlight crime, geographically in Ireland.</p>
 
-<p>A user can log a crime and select the location on a Google Map. Google Maps Api requires an authentication key which is included in the API script. All logged crimes are then displayed in the form of a table and on the maps.</p>
+Below is a live link of the REST API.
+<p><a href ="http://dellaa87.pythonanywhere.com/index.html">http://dellaa87.pythonanywhere.com/index.html</a></p>
 
-<p>As part of this project I used Twitter's API to get tweets relating to Crime in Ireland. Twitter uses four authentication keys to enable users to consume the API - consumer_key, consumer_secret, access_token, access_secret. This information was stored in a separate password file.</p>
+<p>All the crimes are shown on a Google Map, utilising the API. When logging a crime the user can select the location on a Google Map. Google Maps API requires an authentication key which is included in the API script. All logged crimes are then displayed in the form of a table and on the maps.</p>
 
-## Libraries
+<p>As part of this project I used Twitter's API to get tweets relating to Crime in Ireland. Twitter uses four authentication keys to enable users to consume the API - consumer_key, consumer_secret, access_token, access_secret. This information was stored in a separate password file. This File is not included on the Repository - using a Gitignore file. </p>
 
-## Format
+## Libraries 
+I have used multiple libraries as part of this submission and these are all listed in my requirements file. Some of the packages include.
 
-
-## Improvements
+1.  Tweepy - A Python library used to interact with Twitter API.
+2.  mysqlclient - A Python package for interacting with SQL databases.
 

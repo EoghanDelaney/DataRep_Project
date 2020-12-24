@@ -6,15 +6,15 @@ import mysql.connector
 # CREATE DATABASE crimedb;
 
 # *id, *User, *date, *type, *long, *lat, 
-# CREATE TABLE crime (
-#     id int NOT NULL auto_increment,
-#     User varchar(255),
-#     date DATE,
-#     type varchar(255),
-#     lng FLOAT(10,7),
-#     lat FLOAT(10,7),
-#     PRIMARY KEY(id)
-# );
+ CREATE TABLE crime (
+     id int NOT NULL auto_increment,
+     User varchar(255),
+     date DATE,
+     type varchar(255),
+     lng FLOAT(10,7),
+     lat FLOAT(10,7),
+     PRIMARY KEY(id)
+ );
 
 # DESC crime;
 # Date format YYYY - MM - DD

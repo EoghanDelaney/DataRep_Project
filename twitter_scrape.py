@@ -5,7 +5,6 @@ import textblob as tb
 
 
 from tweepy import OAuthHandler
-from textblob import TextBlob
 from datetime import datetime, timedelta
 from flask import jsonify
 
