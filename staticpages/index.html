@@ -19,16 +19,16 @@
     </style>
   </head>
   <body>
-    <div class="container"  ><h1>Crimelog.ie</h1></div>
+    <div class="container"  ><h1>Crimelog.ie</h1></div><br>
 
 
     <div id="showCreateButton" onclick="showCreate()" class="container">
         <button type="submit" value="Log Crime" class="btn btn-primary" onclick="">Create Crime Log</button>
-    </div>
+    </div><br>
     
 
     <div class="container">
-        <div id="map-canvas" style="height:650px;"></div>
+        <div id="map-canvas" style="height:650px;"></div><br>
         <table id="crimeTable" class="table table-hover">
             <thead>
                 <tr>
@@ -42,7 +42,7 @@
             </thead>
             
         </table>
-    </div>
+    </div><br>
 
 
     <div class="container">
@@ -54,13 +54,16 @@
                             <div class="container-fluid">
                                 <div class="form-group">
                                     <img src="img\touchScreen.png" style="height:150px; margin-left: auto; margin-right: auto; display: block; margin-top:10px; margin-bottom:10px;">
-                                    <label>User  </label><br><input type="text" id="user" name="user" value="---"><br><br>
+                                    <label>User  </label><br><input type="text" id="user" name="user" placeholder="Name"><br><br>
                                     <label>Date  </label><br><input type="date" id="date" name="date"><br><br>
                                     <label>Crime Type  </label><br> <select name="type">
-                                            <option value="select">---</option>
-                                            <option value="murder">Murder</option>
+                                            <option value="select" placeholder="Crime Type"></option>
+                                            <option value="Murder">Murder</option>
                                             <option value="J Walking">J walking</option>
                                             <option value="Fist Fighting">Fist Fighting</option>
+                                            <option value="Pick Pocket">Pick Pocket</option>
+                                            <option value="Cow Tipping">Cow Tipping</option>
+                                            <option value="Napster Founder">Napster Founder</option>
                                         </select> <br><br>
                                     <label>Where did it happen? Pick your location on the map. You can drag the cursor to the correct location!</label>
                                     <span><button class="btn btn-primary" id="doCreateButton" onclick="doCreate()">Log Crime</button></span>
@@ -83,7 +86,7 @@
                 </div>
            
             </div>
-    </div>
+    </div><br>
     <div id="twitter-tweets" class="container">
         <h4>Tweets on Crime</h4>
     </div>
@@ -94,17 +97,13 @@
 <script>
         var marker = true;
         var updateNumber = '';
+        var getCrime='Test';
         function showCreate(){
             marker = false
             document.getElementById('showCreateButton').style.display="none"
             document.getElementById('crimeTable').style.display="none"
             document.getElementById('map-canvas').style.display="none"
-            //
             document.getElementById('createUpdateCrimeForm').style.display="block"
-
-            //document.getElementById('createLabel').style.display="inline"
-            //document.getElementById('updateLabel').style.display="none"
-
             document.getElementById('doCreateButton').style.display="block"
             document.getElementById('doUpdateButton').style.display="none"
             
@@ -120,18 +119,16 @@
         }
         function showUpdate(buttonElement){
             updateNumber = buttonElement.parentNode.parentNode.cells[0].innerText
+            getCrime = getCrimeByIdAjax(updateNumber);
             marker = false
             document.getElementById('showCreateButton').style.display="none"
             document.getElementById('crimeTable').style.display="none"
             document.getElementById('map-canvas').style.display="none"
             document.getElementById('createUpdateCrimeForm').style.display="block"
-
-            //document.getElementById('createLabel').style.display="none"
-            //document.getElementById('updateLabel').style.display="inline"
-
             document.getElementById('doCreateButton').style.display="none"
             document.getElementById('doUpdateButton').style.display="block"
-            
+            console.log(updateNumber)
+
         }
 
 
@@ -145,12 +142,12 @@
                 "data":"",
                 "dataType": "JSON",
                 "success":function(result){
-                    //console.log(result);
+   
                     for (crime of result){
                         addCrimeToTable(crime);
-                        //markers1.push(crime);
+ 
                         var myLatlng = new google.maps.LatLng(crime.lat, crime.lng);
-                        //alert(myLatlng);
+        
                         var marker = new google.maps.Marker({
                             position: myLatlng,
                             map: map,
@@ -163,8 +160,25 @@
             });
         }
 
+        function getCrimeByIdAjax(id){
+            console.log("getCrimeByIdAjax was called")
+            $.ajax({
+                "url": "http://127.0.0.1:5000/crimes/"+id,
+                "method":"GET",
+                "data":"",
+                "dataType": "JSON",
+                "success":function(result){
+                    return result;
+
+                },
+                "error":function(xhr,status,error){
+                    console.log("error: "+status+" msg:"+error);
+                }
+            });
+        }
+
         function updateCrimeAjax(crime){
-                console.log(JSON.stringify(crime));
+                //console.log(JSON.stringify(crime));
                 $.ajax({
                     "url": "http://127.0.0.1:5000/crimes/"+encodeURI(crime.id),
                     "method":"PUT",
@@ -227,7 +241,6 @@
                     "success":function(result){
                         console.log(result);
                         for (crime of result){
-                            //console.log(crime['comment'])
                             addTwitterRow(crime);
                     }},
                     "error":function(xhr,status,error){
@@ -235,7 +248,6 @@
                     }
                 });
         }
-        //getAllCrimes();
         function doCreate(){
             var form = document.getElementById('createUpdateCrimeForm')
             var crime = {}
@@ -248,32 +260,20 @@
             createCrimeAjax(crime)
             addCrimeToTable(crime)
             clearForm()
-            //getAllCrimesAjax()
             showViewAll()
         }
         function doUpdate(){
-            //console.log(updateNumber)
+            //var getCrime = getCrimeByIdAjax(updateNumber)
+            //populateFormWithCrime(getCrime)
             var crime = getCrimeFromForm();
             crime.id = updateNumber
-
-            //console.log(updateNumber, crime)
+            var rowElement = document.getElementById(crime.id);
             updateCrimeAjax(crime);
-            setCrimeInRow(updateNumber,crime);
-       
+            setCrimeInRow(rowElement,crime);
             clearForm();
             showViewAll();
             
-            
-            //var crime = getCrimeFromForm();
-            //var rowElement = r.parentNode.parentNode.cells[0].innerText;
-            //var rowElement = document.getElementById('id');
-            //id = rowElement.cells[0].innerText
-            //console.log(rowElement, id)
-            //updateCrimeAjax(crime);
-            //setCrimeInRow(rowElement,crime);
-        
-            //clearForm();
-            //showViewAll();
+            updateNumber="";
         }
  
  
@@ -304,37 +304,8 @@
 
         }
         function addTwitterRow(crime){
-                $("#twitter-tweets").append("<p><b>"+ crime.user+","+crime.date+"</b></p><br><p>"+crime.comment);
+                $("#twitter-tweets").append("<div><p><b>Twitter User:</b>"+ crime.user+"    <b>Date:</b>"+crime.date+"</p><p>"+crime.comment+"</div><br>");
                 }
-
-
-/*
-
-        <div class="card" style="width: 18rem;">
-            <img src="" class="card-img-top" alt="">
-            <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                <a href="#" class="btn btn-primary">Go somewhere</a>
-            </div>
-        </div>
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -457,7 +428,7 @@
         }
         function populateFormWithCrime(crime){
             var form = document.getElementById('createUpdateForm')
-            form.querySelector('input[name="id"]').disabled = true
+            //form.querySelector('input[name="id"]').disabled = true
             form.querySelector('input[name="user"]').value = crime.User
             form.querySelector('input[name="date').value = crime.date
             form.querySelector('select[name="type"]').value = crime.type           
